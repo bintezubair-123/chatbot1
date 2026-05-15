@@ -6,7 +6,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from groq import Groq
-from openai import OpenAI
+
 
 _default_env_path = Path(__file__).resolve().parent.parent / ".env"  # python_code/.env
 load_dotenv(dotenv_path=_default_env_path, override=False)
