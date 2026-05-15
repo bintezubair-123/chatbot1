@@ -5,8 +5,7 @@ from typing import Any, Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+
 from pydantic import BaseModel, Field
 
 from agent_controller import AgentController
@@ -39,9 +38,7 @@ def create_app() -> FastAPI:
     base_dir = Path(__file__).resolve().parent  # python_code/api
     repo_root = base_dir.parent.parent  # workspace root ("New folder")
 
-    assets_dir = repo_root / "assets"
-    if assets_dir.exists():
-        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+    
 
     agent_controller = AgentController()
 
@@ -69,17 +66,14 @@ def create_app() -> FastAPI:
             "hint": "Use POST /api/chat with JSON body: {\"messages\":[{\"role\":\"user\",\"content\":\"hello\"}]}",
         }
 
-    # IMPORTANT: mount the frontend last so it doesn't shadow /api routes.
-    frontend_dist_dir = repo_root / "frontend" / "dist"
-    if frontend_dist_dir.exists():
-        app.mount("/", StaticFiles(directory=str(frontend_dist_dir), html=True), name="frontend")
-
-        @app.get("/", include_in_schema=False)
-        def index() -> FileResponse:
-            return FileResponse(str(frontend_dist_dir / "index.html"))
-
     return app
 
 
 app = create_app()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

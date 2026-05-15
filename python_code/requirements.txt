@@ -1,14 +1,15 @@
+numpy>=1.26.0
 pandas>=2.2.0
+scikit-learn>=1.4.0
+
 python-dotenv==1.0.1
 openai==1.101.0
 pinecone==5.3.1
 mlxtend==0.23.1
-pinecone==5.3.1
 firebase-admin==6.0.1
 google-cloud-storage==2.18.2
 
-# Web API layer (added for frontend integration)
+# Web API
 fastapi==0.115.14
 uvicorn[standard]==0.35.0
 groq==0.31.1
-
