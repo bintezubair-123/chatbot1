@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel, Field
 
-from agent_controller import AgentController
+from .agent_controller import AgentController
 
 
 API_PREFIX = "/api"

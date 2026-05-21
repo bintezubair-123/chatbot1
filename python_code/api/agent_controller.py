@@ -1,10 +1,11 @@
-from agents import (GuardAgent,
-                    ClassificationAgent,
-                    DetailsAgent,
-                    OrderTakingAgent,
-                    RecommendationAgent,
-                    AgentProtocol
-                    )
+from .agents import (
+    GuardAgent,
+    ClassificationAgent,
+    DetailsAgent,
+    OrderTakingAgent,
+    RecommendationAgent,
+    AgentProtocol,
+)
 
 class AgentController():
     def __init__(self):

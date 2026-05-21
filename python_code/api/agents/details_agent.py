@@ -8,7 +8,7 @@ from pathlib import Path
 
 class DetailsAgent():
     def __init__(self):
-        BASE_DIR = Path(__file__).resolve().parent.parent
+        BASE_DIR = Path(__file__).resolve().parent.parent.parent
         about_us_path = BASE_DIR / "products" / "Merry's_way_about_us.txt"
         menu_items_path = BASE_DIR / "products" / "menu_items_text.txt"
         products_path = BASE_DIR / "products" / "products.jsonl"

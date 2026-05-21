@@ -1,6 +1,6 @@
 import json
 
-from llm_provider import get_llm_response
+from ..llm_provider import get_llm_response
 
 
 def _messages_to_prompt(messages):
