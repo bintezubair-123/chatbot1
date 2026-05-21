@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: coffee-shop-backend
+    runtime: python-3.11
+    buildCommand: pip install -r api/requirements.txt
+    startCommand: cd api && uvicorn server:app --host 0.0.0.0 --port 8080
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
