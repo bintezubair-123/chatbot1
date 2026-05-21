@@ -10,15 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install
-COPY api/requirements.txt /app/api/requirements.txt
+COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r /app/api/requirements.txt
+    && pip install --no-cache-dir -r /app/requirements.txt
 
-# Copy app
-COPY api /app/api
+# Copy app and data files
+COPY . /app
 
 # Expose port
 EXPOSE 8080
 
 # Default command
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "api.server:app", "--host", "0.0.0.0", "--port", "8080"]

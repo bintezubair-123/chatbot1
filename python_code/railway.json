@@ -6,7 +6,7 @@
       "type": "docker",
       "dockerfile": "./Dockerfile",
       "port": 8080,
-      "startCommand": "uvicorn server:app --host 0.0.0.0 --port 8080",
+      "startCommand": "uvicorn api.server:app --host 0.0.0.0 --port 8080",
       "env": [
         "RUNPOD_API_KEY",
         "RUNPOD_CHATBOT_URI",

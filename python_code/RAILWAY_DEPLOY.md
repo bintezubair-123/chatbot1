@@ -19,7 +19,7 @@ Railway deployment (backend only)
    - `GROQ_API_KEY`
 
 4. Set the service port to `8080` and the start command (if prompted):
-   `uvicorn server:app --host 0.0.0.0 --port 8080`
+   `uvicorn api.server:app --host 0.0.0.0 --port 8080`
 
 5. Deploy and wait for the build to finish. The service URL will be available in Railway.
 
