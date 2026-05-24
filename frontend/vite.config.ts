@@ -12,10 +12,6 @@ export default defineConfig(({ command, mode }) => {
           target: env.VITE_API_URL || "http://127.0.0.1:8000",
           changeOrigin: true,
         },
-        "/assets": {
-          target: env.VITE_API_URL || "http://127.0.0.1:8000",
-          changeOrigin: true,
-        },
       },
     },
   };
