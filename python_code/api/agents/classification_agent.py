@@ -7,19 +7,21 @@ class ClassificationAgent():
 
         system_prompt = """
             You are a helpful AI assistant for a coffee shop application.
-            Your task is to determine what agent should handle the user input. You have 3 agents to choose from:
-            1. details_agent: This agent is responsible for answering questions about the coffee shop, like location, delivery places, working hours, details about menu items. Or listing items in the menu items. Or by asking what we have.
-            2. order_taking_agent: This agent is responsible for taking orders from the user. It's responsible to have a conversation with the user about the order until it's complete.
-            3. recommendation_agent: This agent is responsible for giving recommendations to the user about what to buy. If the user asks for a recommendation, this agent should be used.
+            Your task is to determine which agent should handle the user input. You have 3 agents to choose from:
+            1. details_agent: Responsible for answering questions about the coffee shop, like location, delivery options, working hours, menu item details, ingredients, or listing menu items.
+            2. order_taking_agent: Responsible for taking orders from the user and managing the order conversation.
+            3. recommendation_agent: Responsible for giving recommendations to the user about what to buy.
 
-            Your output should be in a structured json format like so. each key is a string and each value is a string. Make sure to follow the format exactly:
+            Your output must be a valid JSON object matching this format exactly:
             {
-            "chain of thought": go over each of the agents above and write some your thoughts about what agent is this input relevant to.
-            "decision": "details_agent" or "order_taking_agent" or "recommendation_agent". Pick one of those. and only write the word.
-            "message": leave the message empty.
+              "chain of thought": "Write your reasoning here.",
+              "decision": "details_agent",
+              "message": ""
             }
+            Set "decision" to exactly one of: "details_agent", "order_taking_agent", or "recommendation_agent".
+            Leave "message" empty ("").
             """
-        
+
         input_messages = [
             {"role": "system", "content": system_prompt},
         ]
@@ -30,15 +32,29 @@ class ClassificationAgent():
         output = self.postprocess(chatbot_output)
         return output
 
-    def postprocess(self,output):
-        output = load_json(output)
+    def postprocess(self, output):
+        parsed = load_json(output)
+        decision = str(parsed.get("decision", "details_agent")).strip().lower()
+
+        valid_agents = ["details_agent", "order_taking_agent", "recommendation_agent"]
+        if decision not in valid_agents:
+            # Fallback based on substring matching or default
+            if "order" in decision:
+                decision = "order_taking_agent"
+            elif "recommend" in decision:
+                decision = "recommendation_agent"
+            else:
+                decision = "details_agent"
+
+        message = parsed.get("message", "")
 
         dict_output = {
             "role": "assistant",
-            "content": output['message'],
-            "memory": {"agent":"classification_agent",
-                       "classification_decision": output['decision']
-                      }
+            "content": message,
+            "memory": {
+                "agent": "classification_agent",
+                "classification_decision": decision,
+            },
         }
         return dict_output
 

@@ -1,4 +1,4 @@
-from .agents import (
+from agents import (
     GuardAgent,
     ClassificationAgent,
     DetailsAgent,

@@ -8,12 +8,18 @@ from dotenv import load_dotenv
 from groq import Groq
 
 
-_default_env_path = Path(__file__).resolve().parent.parent / ".env"  # python_code/.env
-load_dotenv(dotenv_path=_default_env_path, override=False)
+_current_file = Path(__file__).resolve()
+for _env_path in [
+    _current_file.parent / ".env",
+    _current_file.parent.parent / ".env",
+    _current_file.parent.parent.parent / ".env",
+]:
+    if _env_path.is_file():
+        load_dotenv(dotenv_path=_env_path, override=False)
 load_dotenv(override=False)
 
-# Groq deprecated `llama3-8b-8192`; use a current default.
-DEFAULT_MODEL = "llama-3.1-8b-instant"
+# Default Groq model supported on account
+DEFAULT_MODEL = "groq/compound-mini"
 
 
 @lru_cache(maxsize=1)

@@ -1,6 +1,6 @@
 import json
 
-from ..llm_provider import get_llm_response
+from llm_provider import get_llm_response
 
 
 def _messages_to_prompt(messages):
@@ -13,17 +13,33 @@ def _messages_to_prompt(messages):
     return "\n\n".join(prompt_parts)
 
 
+import re
+
 def extract_json_string(text):
     text = text.strip()
-    if text.startswith("```"):
-        lines = text.splitlines()
-        if len(lines) >= 3:
-            text = "\n".join(lines[1:-1]).strip()
+    # Strip markdown code blocks if present
+    code_block_match = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL | re.IGNORECASE)
+    if code_block_match:
+        text = code_block_match.group(1).strip()
 
-    start = text.find("{")
-    end = text.rfind("}")
+    # Find boundaries for JSON object or array
+    obj_start = text.find("{")
+    obj_end = text.rfind("}")
+    arr_start = text.find("[")
+    arr_end = text.rfind("]")
+
+    start = -1
+    end = -1
+
+    if obj_start != -1 and (arr_start == -1 or obj_start < arr_start):
+        start = obj_start
+        end = obj_end
+    elif arr_start != -1:
+        start = arr_start
+        end = arr_end
+
     if start != -1 and end != -1 and end >= start:
-        return text[start:end + 1]
+        return text[start : end + 1]
     return text
 
 
@@ -55,4 +71,15 @@ If the JSON is already valid, return it unchanged.
 
 
 def load_json(text):
-    return json.loads(extract_json_string(text))
+    extracted = extract_json_string(text)
+    try:
+        return json.loads(extracted)
+    except Exception:
+        # Fallback: fix trailing commas in objects/lists
+        cleaned = re.sub(r",\s*([\]}])", r"\1", extracted)
+        try:
+            return json.loads(cleaned)
+        except Exception:
+            # Second fallback: ask LLM to correct json if initial parse failed
+            corrected = double_check_json_output(extracted)
+            return json.loads(corrected)

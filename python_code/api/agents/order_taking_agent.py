@@ -1,20 +1,87 @@
 import os
 import json
-from .utils import get_chatbot_response, double_check_json_output, load_json
+from .utils import get_chatbot_response, load_json
 from copy import deepcopy
+
+import unicodedata
+
+MENU_PRICES = {
+    "Cappuccino": 4.50,
+    "Jumbo Savory Scone": 3.25,
+    "Latte": 4.75,
+    "Chocolate Chip Biscotti": 2.50,
+    "Espresso shot": 2.00,
+    "Hazelnut Biscotti": 2.75,
+    "Chocolate Croissant": 3.75,
+    "Dark chocolate (Drinking Chocolate)": 5.00,
+    "Cranberry Scone": 3.50,
+    "Croissant": 3.25,
+    "Almond Croissant": 4.00,
+    "Ginger Biscotti": 2.50,
+    "Oatmeal Scone": 3.25,
+    "Ginger Scone": 3.50,
+    "Chocolate syrup": 1.50,
+    "Hazelnut syrup": 1.50,
+    "Carmel syrup": 1.50,
+    "Sugar Free Vanilla syrup": 1.50,
+    "Dark chocolate (Packaged Chocolate)": 3.00,
+    "Flat White": 4.75,
+    "Caffè Mocha": 5.00,
+    "Caffè Panna": 4.50,
+    "Mocha Fusi": 5.25,
+}
+
+
+def normalize_str(s: str) -> str:
+    # Normalize unicode accents e.g. Caffè -> Caffe
+    normalized = unicodedata.normalize("NFKD", s)
+    return "".join(c for c in normalized if not unicodedata.combining(c)).lower().strip()
+
+
+def calculate_order_prices(order_list):
+    validated_order = []
+    total_price = 0.0
+    for item_dict in order_list:
+        if not isinstance(item_dict, dict):
+            continue
+        item_name = str(item_dict.get("item", "")).strip()
+        quantity = item_dict.get("quantity", item_dict.get("quanitity", 1))
+        try:
+            quantity = int(quantity)
+        except (ValueError, TypeError):
+            quantity = 1
+
+        price_per_unit = 0.0
+        matched_name = item_name
+        normalized_input = normalize_str(item_name)
+        for menu_name, price in MENU_PRICES.items():
+            if normalize_str(menu_name) == normalized_input:
+                price_per_unit = price
+                matched_name = menu_name
+                break
+
+        item_total = price_per_unit * quantity
+        total_price += item_total
+        validated_order.append(
+            {
+                "item": matched_name,
+                "quantity": quantity,
+                "price": round(item_total, 2),
+            }
+        )
+    return validated_order, round(total_price, 2)
 
 
 class OrderTakingAgent():
     def __init__(self, recommendation_agent):
         self.recommendation_agent = recommendation_agent
-    
-    def get_response(self,messages):
+
+    def get_response(self, messages):
         messages = deepcopy(messages)
         system_prompt = """
             You are a customer support Bot for a coffee shop called "Merry's way"
 
-            here is the menu for this coffee shop.
-
+            Here is the menu for this coffee shop:
             Cappuccino - $4.50
             Jumbo Savory Scone - $3.25
             Latte - $4.75
@@ -34,91 +101,103 @@ class OrderTakingAgent():
             Carmel syrup - $1.50
             Sugar Free Vanilla syrup - $1.50
             Dark chocolate (Packaged Chocolate) - $3.00
+            Flat White - $4.75
+            Caffè Mocha - $5.00
+            Caffè Panna - $4.50
+            Mocha Fusi - $5.25
 
             Things to NOT DO:
-            * DON't ask how to pay by cash or Card.
-            * Don't tell the user to go to the counter
-            * Don't tell the user to go to place to get the order
+            * Don't ask how to pay by cash or Card.
+            * Don't tell the user to go to the counter.
+            * Don't tell the user to go to another place to get the order.
 
-
-            You're task is as follows:
-            1. Take the User's Order
-            2. Validate that all their items are in the menu
-            3. if an item is not in the menu let the user and repeat back the remaining valid order
+            Your task is as follows:
+            1. Take the User's Order.
+            2. Validate that all their items are in the menu.
+            3. If an item is not in the menu, inform the user and repeat back the remaining valid order.
             4. Ask them if they need anything else.
-            5. If they do then repeat starting from step 3
-            6. If they don't want anything else. Using the "order" object that is in the output. Make sure to hit all three points
-                1. list down all the items and their prices
-                2. calculate the total. 
-                3. Thank the user for the order and close the conversation with no more questions
+            5. If they do, repeat starting from step 3.
+            6. If they don't want anything else:
+                - List down all the ordered items with prices.
+                - State the calculated grand total.
+                - Thank the user and close the conversation nicely.
 
-            The user message will contain a section called memory. This section will contain the following:
-            "order"
-            "step number"
-            please utilize this information to determine the next step in the process.
-            
-            produce the following output without any additions, not a single letter outside of the structure bellow.
-            Your output should be in a structured json format like so. each key is a string and each value is a string. Make sure to follow the format exactly:
+            Your output must be a valid JSON object matching this format exactly:
             {
-            "chain of thought": Write down your critical thinking about what is the maximum task number the user is on write now. Then write down your critical thinking about the user input and it's relation to the coffee shop process. Then write down your thinking about how you should respond in the response parameter taking into consideration the Things to NOT DO section. and Focus on the things that you should not do. 
-            "step number": Determine which task you are on based on the conversation.
-            "order": this is going to be a list of jsons like so. [{"item":put the item name, "quanitity": put the number that the user wants from this item, "price":put the total price of the item }]
-            "response": write the a response to the user
+              "chain of thought": "Write your reasoning about current order state and next response.",
+              "step number": "1",
+              "order": [
+                {"item": "Latte", "quantity": 1, "price": 4.75}
+              ],
+              "response": "Write response to the user here."
             }
         """
 
         last_order_taking_status = ""
         asked_recommendation_before = False
-        for message_index in range(len(messages)-1,0,-1):
+        for message_index in range(len(messages) - 1, -1, -1):
             message = messages[message_index]
-            
-            agent_name = message.get("memory",{}).get("agent","")
+
+            agent_name = message.get("memory", {}).get("agent", "")
             if message["role"] == "assistant" and agent_name == "order_taking_agent":
-                step_number = message["memory"]["step number"]
-                order = message["memory"]["order"]
-                asked_recommendation_before = message["memory"]["asked_recommendation_before"]
+                step_number = message["memory"].get("step number", "1")
+                order = message["memory"].get("order", [])
+                asked_recommendation_before = message["memory"].get(
+                    "asked_recommendation_before", False
+                )
                 last_order_taking_status = f"""
                 step number: {step_number}
                 order: {order}
                 """
                 break
 
-        messages[-1]['content'] = last_order_taking_status + " \n "+ messages[-1]['content']
+        if last_order_taking_status:
+            messages[-1]["content"] = (
+                last_order_taking_status + " \n " + messages[-1]["content"]
+            )
 
-        input_messages = [{"role": "system", "content": system_prompt}] + messages        
+        input_messages = [{"role": "system", "content": system_prompt}] + messages
 
         chatbot_output = get_chatbot_response(input_messages)
-
-        # double check json 
-        chatbot_output = double_check_json_output(chatbot_output)
-
-        output = self.postprocess(chatbot_output,messages,asked_recommendation_before)
+        output = self.postprocess(chatbot_output, messages, asked_recommendation_before)
 
         return output
 
-    def postprocess(self,output,messages,asked_recommendation_before):
-        output = load_json(output)
+    def postprocess(self, output, messages, asked_recommendation_before):
+        parsed = load_json(output)
 
-        if type(output["order"]) == str:
-            output["order"] = json.loads(output["order"])
+        raw_order = parsed.get("order", [])
+        if isinstance(raw_order, str):
+            try:
+                raw_order = json.loads(raw_order)
+            except Exception:
+                raw_order = []
 
-        response = output['response']
-        if not asked_recommendation_before and len(output["order"])>0:
-            recommendation_output = self.recommendation_agent.get_recommendations_from_order(messages,output['order'])
-            response = recommendation_output['content']
+        validated_order, total_price = calculate_order_prices(raw_order)
+        response = parsed.get("response", "")
+
+        # Append recommendations without destroying the order response
+        if not asked_recommendation_before and len(validated_order) > 0:
+            rec_output = self.recommendation_agent.get_recommendations_from_order(
+                messages, validated_order
+            )
+            rec_text = rec_output.get("content", "")
+            if rec_text:
+                response = f"{response}\n\n{rec_text}".strip()
             asked_recommendation_before = True
 
         dict_output = {
             "role": "assistant",
-            "content": response ,
-            "memory": {"agent":"order_taking_agent",
-                       "step number": output["step number"],
-                       "order": output["order"],
-                       "asked_recommendation_before": asked_recommendation_before
-                      }
+            "content": response,
+            "memory": {
+                "agent": "order_taking_agent",
+                "step number": str(parsed.get("step number", "1")),
+                "order": validated_order,
+                "total_price": total_price,
+                "asked_recommendation_before": asked_recommendation_before,
+            },
         }
 
-        
         return dict_output
 
     

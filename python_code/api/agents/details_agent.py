@@ -33,38 +33,30 @@ class DetailsAgent():
             [about_us, menu_items, "Product Details:\n" + "\n".join(product_details)]
         )
 
-    def get_response(self,messages):
+    def get_response(self, messages):
         messages = deepcopy(messages)
-        user_message = messages[-1]["content"]
-        prompt = f"""
-        Using the knowledge base below, answer the user's coffee-shop question accurately and concisely.
-        If the answer is not present in the knowledge base, say that you do not have that information.
 
-        Knowledge Base:
-        {self.knowledge_base}
+        system_prompt = f"""
+You are a customer support agent for a coffee shop called "Merry's way".
+Answer the user's questions as a helpful waiter, using ONLY the official coffee-shop knowledge base provided below.
+If the answer or menu item is not mentioned in the knowledge base, state politely that you do not have that information. Do NOT invent facts or items outside of this knowledge base.
 
-        User Query:
-        {user_message}
-        """
-
-        system_prompt = """
-        You are a customer support agent for a coffee shop called Merry's way. 
-        You should answer as a helpful waiter and only use the provided coffee-shop information.
-        """
-        messages[-1]["content"] = prompt
+Knowledge Base:
+{self.knowledge_base}
+"""
         input_messages = [{"role": "system", "content": system_prompt}] + messages[-3:]
         chatbot_output = get_chatbot_response(input_messages)
         output = self.postprocess(chatbot_output)
 
         return output
-    def postprocess(self,output):
-        output={
-            "role":"assistant",
-            "content":output,
-            "memory":{
-                "agent":"details_agent"
-            }
+
+    def postprocess(self, output):
+        return {
+            "role": "assistant",
+            "content": output,
+            "memory": {
+                "agent": "details_agent",
+            },
         }
-        return output
     
         
