@@ -111,16 +111,8 @@ export default defineConfig(({ mode }) => {
     },
 
     build: {
-      // Produce smaller chunks for faster mobile load
       target: "es2020",
       chunkSizeWarningLimit: 600,
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            vendor: [],
-          },
-        },
-      },
     },
   };
 });
