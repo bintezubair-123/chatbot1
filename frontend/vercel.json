@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://chatbot3-production-dff0.up.railway.app/api/$1"
+      "destination": "https://chatbot3-production-fc03.up.railway.app/api/$1"
     }
   ],
   "headers": [
