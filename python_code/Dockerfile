@@ -1,24 +1,28 @@
-# Dockerfile for Coffee Shop backend (FastAPI)
+# ── Merry's Way — FastAPI Backend ─────────────────────────────────────────
+# Build context: python_code/
+# Railway injects $PORT at runtime; default 8080 for local docker run.
+
 FROM python:3.11-slim
 
-# Set working directory
-WORKDIR /app
-
-# Install system deps
+# System deps needed to compile bcrypt / cryptography wheels
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+        build-essential \
+        libffi-dev \
+        libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install
+WORKDIR /app
+
+# Install Python deps first (layer-cached unless requirements change)
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r /app/requirements.txt
+ && pip install --no-cache-dir -r /app/requirements.txt
 
-# Copy app and data files
+# Copy the full python_code/ tree (api/, recommendation_objects/, etc.)
 COPY . /app
 
-# Expose port
+# Railway exposes $PORT; fall back to 8080 for plain docker run
 EXPOSE 8080
 
-# Default command
-CMD ["uvicorn", "api.server:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run from /app so relative imports (agents/, recommendation_objects/) resolve
+CMD ["sh", "-c", "uvicorn api.server:app --host 0.0.0.0 --port ${PORT:-8080}"]

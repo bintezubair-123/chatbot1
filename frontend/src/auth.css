@@ -1,0 +1,411 @@
+/* ============================================================
+   AUTH.CSS — Login / Signup UI
+   Matches the existing design system in style.css:
+     --bg, --bg-surface, --bg-card, --panel-border
+     --amber, --amber-light, --amber-glow, --amber-border
+     --purple, --purple-glow
+     --text-primary, --text-secondary, --text-muted
+     --font (Sora), --radius-*, --shadow-*
+   ============================================================ */
+
+/* ── Full-screen overlay ────────────────────────────────────── */
+
+.authOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;               /* below onboarding (9999), above app */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #07070a;
+  animation: authFadeIn 0.4s ease both;
+  overflow-y: auto;
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.authOverlay--hiding {
+  animation: authFadeOut 0.4s ease forwards;
+}
+
+@keyframes authFadeOut {
+  from { opacity: 1; transform: scale(1);    }
+  to   { opacity: 0; transform: scale(1.03); }
+}
+
+/* ── Ambient glow blobs (match onboarding aesthetic) ───────── */
+
+.authBlob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.authBlob--amber {
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.2), transparent 70%);
+  top: -160px;
+  left: -120px;
+}
+
+.authBlob--purple {
+  width: 460px;
+  height: 460px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.18), transparent 70%);
+  bottom: -120px;
+  right: -100px;
+}
+
+/* ── Card ───────────────────────────────────────────────────── */
+
+.authCard {
+  position: relative;
+  z-index: 1;
+  width: min(400px, 100%);
+  background: var(--bg-surface, #14141c);
+  border: 1px solid var(--panel-border, rgba(255,255,255,0.12));
+  border-radius: 32px;
+  padding: 28px 28px 32px;
+  box-shadow:
+    0 30px 80px -10px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  animation: authCardIn 0.45s cubic-bezier(0.25, 1, 0.4, 1) both;
+}
+
+@keyframes authCardIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Brand header ───────────────────────────────────────────── */
+
+.authBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.authLogoWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid var(--amber-border, rgba(245,158,11,0.4));
+  background: var(--amber-glow, rgba(245,158,11,0.25));
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 18px var(--amber-glow, rgba(245,158,11,0.25));
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.authLogo {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.authBrandName {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary, rgba(255,255,255,0.95));
+  line-height: 1.2;
+}
+
+.authBrandSub {
+  font-size: 11px;
+  color: var(--text-secondary, rgba(255,255,255,0.65));
+  margin-top: 1px;
+}
+
+/* ── Tab switcher ───────────────────────────────────────────── */
+
+.authTabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--panel-border, rgba(255,255,255,0.12));
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.authTab {
+  position: relative;
+  z-index: 1;
+  padding: 9px 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, rgba(255,255,255,0.45));
+  font-family: var(--font, system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: color 0.25s ease;
+  letter-spacing: 0.2px;
+}
+
+.authTab.active {
+  color: #000;
+}
+
+.authTabIndicator {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  box-shadow: 0 4px 16px rgba(245,158,11,0.25);
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.4, 1);
+  pointer-events: none;
+}
+
+/* ── Form area ──────────────────────────────────────────────── */
+
+.authFormArea {
+  animation: authFormIn 0.3s ease both;
+}
+
+@keyframes authFormIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Field group ────────────────────────────────────────────── */
+
+.authFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.authLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary, rgba(255,255,255,0.65));
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input wrapper (holds input + eye button) */
+.authInputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.authInputWrap .authInput {
+  padding-right: 42px;   /* room for eye button */
+  width: 100%;
+}
+
+.authInput {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border, rgba(255,255,255,0.12));
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary, rgba(255,255,255,0.95));
+  font-family: var(--font, system-ui, sans-serif);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.authInput::placeholder {
+  color: var(--text-muted, rgba(255,255,255,0.45));
+}
+
+.authInput:focus {
+  border-color: var(--amber-border, rgba(245,158,11,0.4));
+  box-shadow: 0 0 0 3px var(--amber-glow, rgba(245,158,11,0.25));
+}
+
+.authInput.error {
+  border-color: #f87171;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+}
+
+/* Eye toggle button */
+.authEyeBtn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, rgba(255,255,255,0.45));
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.authEyeBtn:hover {
+  color: var(--text-secondary);
+}
+
+/* Per-field error text */
+.authFieldError {
+  font-size: 11px;
+  color: #f87171;
+  min-height: 14px;
+  line-height: 1.3;
+  padding-left: 2px;
+}
+
+/* ── Form-level error (below all fields) ────────────────────── */
+
+.authFormError {
+  display: block;
+  font-size: 12px;
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-height: 0;
+  line-height: 1.45;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+/* Hide when empty */
+.authFormError:empty {
+  display: none;
+}
+
+/* ── Submit button ───────────────────────────────────────────── */
+
+.authSubmitBtn {
+  margin-top: 4px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #000;
+  font-family: var(--font, system-ui, sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(245,158,11,0.25);
+  transition: transform 0.15s ease, opacity 0.2s ease;
+  letter-spacing: 0.2px;
+}
+
+.authSubmitBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px var(--amber-glow);
+}
+
+.authSubmitBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.authSubmitBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Switch link ─────────────────────────────────────────────── */
+
+.authSwitch {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted, rgba(255,255,255,0.45));
+}
+
+.authSwitchBtn {
+  background: none;
+  border: none;
+  color: var(--amber-light, #fbbf24);
+  font-family: var(--font, system-ui, sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.authSwitchBtn:hover {
+  color: #f59e0b;
+}
+
+/* ── Responsive — very small screens ────────────────────────── */
+
+@media (max-width: 380px) {
+  .authCard {
+    padding: 22px 18px 26px;
+    border-radius: 24px;
+  }
+
+  .authBrandName {
+    font-size: 16px;
+  }
+}
+
+/* Ensure card doesn't overflow viewport height on short screens */
+@media (max-height: 700px) {
+  .authCard {
+    max-height: calc(100svh - 32px);
+    overflow-y: auto;
+  }
+}
+
+/* ── Loading spinner inside submit button ───────────────────── */
+
+/* authSubmitBtn already defined above — just add flex for loading state */
+.authSubmitBtn:has(.authSpinner) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.authSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  border-top-color: #000;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: authSpin 0.7s linear infinite;
+}
+
+@keyframes authSpin {
+  to { transform: rotate(360deg); }
+}
+
+.authLoadingText {
+  font-size: 14px;
+  font-weight: 700;
+}
+/* #authDots text content is driven by JS — no CSS animation needed */

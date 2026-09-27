@@ -1,1 +1,50 @@
+# ── Secrets ────────────────────────────────────────────────────────────────
 .env
+*.pem
+*.key
+
+# ── Python ─────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Database (SQLite — never commit user data) ─────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Node / Frontend ────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# ── OS / Editor ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Docker ─────────────────────────────────────────────────────────────────
+*.log
+
+# ── ML artefacts (large binaries — use DVC or cloud storage) ───────────────
+*.pkl
+*.joblib
+*.h5
+*.model

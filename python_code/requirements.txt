@@ -1,15 +1,23 @@
+# ── Core web framework ─────────────────────────────────────────────────────
+fastapi==0.115.14
+uvicorn[standard]==0.35.0
+python-dotenv==1.0.1
+pydantic>=2.0.0
+
+# ── AI / LLM ───────────────────────────────────────────────────────────────
+groq==0.31.1
+openai==1.101.0
+pinecone==5.3.1
+
+# ── Data / ML ──────────────────────────────────────────────────────────────
 numpy>=1.26.0
 pandas>=2.2.0
 scikit-learn>=1.4.0
-
-python-dotenv==1.0.1
-openai==1.101.0
-pinecone==5.3.1
 mlxtend==0.23.1
-firebase-admin==6.0.1
-google-cloud-storage==2.18.2
 
-# Web API
-fastapi==0.115.14
-uvicorn[standard]==0.35.0
-groq==0.31.1
+# ── Payments ───────────────────────────────────────────────────────────────
+stripe==12.3.0
+
+# ── Authentication ─────────────────────────────────────────────────────────
+bcrypt==5.0.0
+python-jose[cryptography]==3.3.0

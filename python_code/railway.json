@@ -1,23 +1,13 @@
 {
-  "project": "coffee-shop-backend",
-  "services": [
-    {
-      "name": "backend",
-      "type": "docker",
-      "dockerfile": "./Dockerfile",
-      "port": 8080,
-      "startCommand": "uvicorn api.server:app --host 0.0.0.0 --port 8080",
-      "env": [
-        "RUNPOD_API_KEY",
-        "RUNPOD_CHATBOT_URI",
-        "RUNPOD_EMBEDDING_URL",
-        "MODEL_NAME",
-        "PINECONE_API_KEY",
-        "PINECONE_INDEX_NAME",
-        "FIREBASE_PRIVATE_KEY",
-        "FIREBASE_CLIENT_EMAIL",
-        "GROQ_API_KEY"
-      ]
-    }
-  ]
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "uvicorn api.server:app --host 0.0.0.0 --port $PORT",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 30,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
 }
