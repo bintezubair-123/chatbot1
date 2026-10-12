@@ -438,7 +438,7 @@ async function handleSendMessage(promptText: string) {
   } catch (err: any) {
     messages.push({
       role: "assistant",
-      content: `Sorry, unable to connect to backend: ${err.message || String(err)}`,
+      content: `⚠️ ${err.message || String(err)}`,
     });
   } finally {
     saveMessages();

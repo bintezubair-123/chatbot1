@@ -156,7 +156,10 @@ def create_app() -> FastAPI:
         except HTTPException:
             raise
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            # Surface the real error so it shows in the frontend + Railway logs
+            import traceback
+            error_detail = f"{type(e).__name__}: {e}\n{traceback.format_exc()}"
+            raise HTTPException(status_code=500, detail=error_detail)
 
     @app.get(f"{API_PREFIX}/chat", include_in_schema=False)
     def chat_help() -> dict[str, Any]:
