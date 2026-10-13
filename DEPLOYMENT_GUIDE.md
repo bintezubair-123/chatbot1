@@ -1,26 +1,25 @@
 # Deployment Guide
 
-This document provides instructions for deploying the frontend on Vercel and backend on Render.
+This document provides instructions for deploying the frontend on Vercel and backend on Railway.
 
 ## Prerequisites
 - GitHub repository with this code pushed
 - Vercel account (https://vercel.com)
-- Render account (https://render.com)
+- Railway account (https://railway.app)
 
-## Backend Deployment (Render)
+## Backend Deployment (Railway)
 
 ### Steps:
-1. Go to [Render Dashboard](https://dashboard.render.com)
-2. Click "New +" → "Web Service"
-3. Connect your GitHub repository
-4. Configure:
+1. Go to [Railway](https://railway.app) and create a project from your GitHub repository.
+2. In the backend service settings, configure:
    - **Name**: `coffee-shop-backend` (or your preferred name)
-   - **Root Directory**: `python_code`
-   - **Build Command**: `pip install -r api/requirements.txt`
-   - **Start Command**: `cd api && uvicorn server:app --host 0.0.0.0 --port 8080`
-   - **Instance Type**: Free or Starter (depending on needs)
+   - **Root Directory**: `/python_code/api`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn server:app --host 0.0.0.0 --port $PORT`
 
-5. **Add Environment Variables** (from your `.env` file):
+   These paths are relative to the service root directory. Since the root is `python_code/api`, do not prefix `requirements.txt` or `server` with `api/`.
+
+3. **Add Environment Variables** in Railway (from your `.env` file):
    - `RUNPOD_API_KEY`
    - `RUNPOD_CHATBOT_URI`
    - `RUNPOD_EMBEDDING_URL`
@@ -51,9 +50,7 @@ This document provides instructions for deploying the frontend on Vercel and bac
    - `CLOUD_UNIVERSE_DOMAIN`
    - `GROQ_API_KEY`
 
-6. Click "Create Web Service"
-7. Wait for deployment (~5-10 minutes)
-8. **Copy the assigned URL** (e.g., `https://coffee-shop-backend.onrender.com`)
+4. Deploy the service and copy its public URL from Railway.
 
 ## Frontend Deployment (Vercel)
 
@@ -69,7 +66,7 @@ This document provides instructions for deploying the frontend on Vercel and bac
 
 5. **Add Environment Variables**:
    - **Name**: `VITE_API_URL`
-   - **Value**: `https://coffee-shop-backend.onrender.com` (the URL from your Render deployment)
+   - **Value**: `https://your-backend.up.railway.app` (the URL from your Railway deployment)
 
 6. Click "Deploy"
 7. Wait for deployment (~2-3 minutes)
@@ -78,7 +75,7 @@ This document provides instructions for deploying the frontend on Vercel and bac
 
 Your app will be live at:
 - **Frontend**: `https://your-project.vercel.app`
-- **Backend**: `https://your-project.onrender.com` (or custom domain)
+- **Backend**: Your Railway service URL (or custom domain)
 
 Frontend will automatically communicate with the backend using the `VITE_API_URL` environment variable.
 
@@ -103,4 +100,4 @@ Frontend will be at `http://localhost:5173` and will proxy API calls to `http://
 
 - **CORS errors**: Ensure backend CORS middleware allows your Vercel domain
 - **API calls failing**: Verify `VITE_API_URL` is set correctly in Vercel
-- **Build fails**: Check that `render.yaml` paths are correct relative to repository root
+- **Backend build fails with a missing requirements file**: Check Railway's Root Directory. With `/python_code/api`, use `pip install -r requirements.txt`; with the repository root, use `pip install -r python_code/api/requirements.txt`.

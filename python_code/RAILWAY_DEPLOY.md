@@ -4,8 +4,9 @@ Railway deployment (backend only)
 
 2. In Railway dashboard:
    - Click "New Project" → "Deploy from GitHub" → connect repo
-   - Select the repository and choose the `python_code` folder (or let Railway detect the Dockerfile)
-   - If Railway detects Dockerfile, it will build the image using `python_code/Dockerfile`.
+   - Set the backend service's Root Directory to `/python_code/api` for a Python/Nixpacks deployment.
+   - With this root directory, set the build command to `pip install -r requirements.txt` and the start command to `uvicorn server:app --host 0.0.0.0 --port $PORT`.
+   - Alternatively, use `/python_code` as the root directory to build with `python_code/Dockerfile`.
 
 3. Add environment variables in Railway (Variables): copy values from your `.env` file. Important keys:
    - `RUNPOD_API_KEY`
@@ -18,8 +19,7 @@ Railway deployment (backend only)
    - `FIREBASE_CLIENT_EMAIL`
    - `GROQ_API_KEY`
 
-4. Set the service port to `8080` and the start command (if prompted):
-   `uvicorn api.server:app --host 0.0.0.0 --port 8080`
+4. Railway provides the `PORT` environment variable; bind Uvicorn to `0.0.0.0` and use `$PORT` as shown above. Do not hard-code port `8080` for a Nixpacks deployment.
 
 5. Deploy and wait for the build to finish. The service URL will be available in Railway.
 
@@ -32,4 +32,4 @@ docker run -p 8080:8080 --env-file python_code/.env -it coffee-backend
 
 Notes:
 - Keep secrets out of Git by using Railway variables or a secret manager.
-- If you prefer not to use Docker, you can set up a Railway service with a Python runtime and the same start command; ensure `requirements.txt` is installed in the build step.
+- If deploying from `/python_code` with Docker, the Dockerfile installs `python_code/requirements.txt` and starts `api.server:app`.
